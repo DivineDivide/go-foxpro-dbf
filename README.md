@@ -13,16 +13,28 @@ older FoxPro files, see the included `testdbf` folder for these files.
 These files have file flag 0x30 (or 0x31 if autoincrement fields are present).
 
 Since these files are almost always used on Windows platforms the default encoding is
-from Windows-1250 to UTF8 but a universal encoder will be provided for other code pages.
+from Windows-1250 to UTF8, but encoders for other code pages are also provided including Big5 for Traditional Chinese.
 
 # Features 
 
 There are several similar packages but they are not suited for our use case, this package will try to implement:
 * Support for FPT (memo) files
 * Full support for Windows-1250 encoding to UTF8
+* Support for Big5 encoding for Traditional Chinese
 * File readers for scanning files (instead of reading the entire file to memory)
 
 The focus is on performance while also trying to keep the code readable and easy to use.
+
+# Supported encodings
+
+The package supports multiple character encodings through different decoder implementations:
+
+| Decoder | Usage | Description |
+|---------|-------|-------------|
+| `Win1250Decoder` | `new(dbf.Win1250Decoder)` | Windows-1250 to UTF-8 (default, common for Western European) |
+| `Big5Decoder` | `new(dbf.Big5Decoder)` | Big5 to UTF-8 (Traditional Chinese) |
+| `UTF8Decoder` | `new(dbf.UTF8Decoder)` | Pass-through for UTF-8 files |
+| `UTF8Validator` | `new(dbf.UTF8Validator)` | Validates UTF-8 and returns error if invalid |
 
 # Supported field types
 
@@ -51,12 +63,15 @@ The supported field types with their return Go types are:
 
 ```go
 func Test() error {
-	// Open file
+	// Open file with Windows-1250 encoding (default for Western European)
 	testdbf, err := dbf.OpenFile("TEST.DBF", new(dbf.Win1250Decoder))
 	if err != nil {
 		return err
 	}
 	defer testdbf.Close()
+	
+	// For Traditional Chinese Big5 encoded files, use:
+	// testdbf, err := dbf.OpenFile("CHINESE.DBF", new(dbf.Big5Decoder))
 
 	// Print all the fieldnames
 	for _, name := range testdbf.FieldNames() {

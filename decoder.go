@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 
 	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/encoding/traditionalchinese"
 	"golang.org/x/text/transform"
 )
 
@@ -52,4 +53,20 @@ func (d *UTF8Validator) Decode(in []byte) ([]byte, error) {
 		return in, nil
 	}
 	return nil, ErrInvalidUTF8
+}
+
+// Big5Decoder translates a Big5 (Traditional Chinese) DBF to UTF8
+type Big5Decoder struct{}
+
+// Decode decodes a Big5 byte slice to a UTF8 byte slice
+func (d *Big5Decoder) Decode(in []byte) ([]byte, error) {
+	if utf8.Valid(in) {
+		return in, nil
+	}
+	r := transform.NewReader(bytes.NewReader(in), traditionalchinese.Big5.NewDecoder())
+	data, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
